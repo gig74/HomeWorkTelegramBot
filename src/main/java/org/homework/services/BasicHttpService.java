@@ -13,6 +13,7 @@ import org.homework.logger.Logger;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Register
@@ -36,11 +37,11 @@ public class BasicHttpService implements HttpService {
     @Override
     public String sendPostRequest(String url, Map<String, String> headers, String body) throws IOException, URISyntaxException {
         logger.debug("Отправка POST-запроса по URL: " + url);
-
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost request = new HttpPost(url);
             headers.forEach(request::addHeader);
-            request.setEntity(new StringEntity(body));
+            StringEntity entity = new StringEntity(body, StandardCharsets.UTF_8);
+            request.setEntity(entity);
             HttpResponse response = client.execute(request);
             return EntityUtils.toString(response.getEntity());
         }
@@ -53,7 +54,6 @@ public class BasicHttpService implements HttpService {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPut request = new HttpPut(url);
             headers.forEach(request::addHeader);
-            request.setEntity(new StringEntity(body));
             HttpResponse response = client.execute(request);
             return EntityUtils.toString(response.getEntity());
         }

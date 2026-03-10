@@ -1,6 +1,7 @@
 package org.homework.bot;
 
 import org.homework.api.CommandService;
+import org.homework.config.ConfigBotParameter;
 import org.homework.logger.Logger;
 import org.homework.di.annotations.Register;
 import org.homework.di.annotations.Resolve;
@@ -14,17 +15,19 @@ public class Bot extends TelegramLongPollingBot {
     private CommandService commandService;
     @Resolve
     private Logger logger;
+    @Resolve
+    private ConfigBotParameter configBotParameter;
+
     @Override
     public String getBotUsername() {
         // Верните имя вашего бота
-        return "YOUR_BOT_USERNAME";
+        return configBotParameter.getBotName(); //"YOUR_BOT_USERNAME";
     }
 
     @Override
     public String getBotToken() {
-        return "YOUR_BOT_TOKEN";
+        return configBotParameter.getBotToken(); //"YOUR_BOT_TOKEN";
     }
-
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -32,23 +35,46 @@ public class Bot extends TelegramLongPollingBot {
 
         // Проверяем, есть ли в обновлении сообщение и текст сообщения
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String command = update.getMessage().getText();
+            String text = update.getMessage().getText();
             String chatId = update.getMessage().getChatId().toString();
-
-            logger.info("Обработка команды: " + command);
-
-            try {
-                if (command.equalsIgnoreCase("/getHeroes")) {
-                    // Вызов метода getHeroes из CommandService
-                    execute(commandService.getHeroes(chatId));
-
-                } else if (command.equalsIgnoreCase("/help")) {
-                    // Вызов метода getHelp из CommandService
-                     execute(commandService.getHelp(chatId));
+            if (text.length() >= 1 && text.charAt(0) == '/') {
+                String command = text;
+                logger.info("Обработка команды: " + command);
+                try {
+                    if (command.equalsIgnoreCase("/help")) {
+                        // Вызов метода getHelp из CommandService
+                        execute(commandService.getHelp(chatId));
+                    } else if (command.equalsIgnoreCase("/getInsult")) {
+                        // Вызов метода getHelp из CommandService
+                        execute(commandService.getInsult(chatId));
+                    } else if (command.equalsIgnoreCase("/getInsultWithTranslate")) {
+                        // Вызов метода getHelp из CommandService
+                        execute(commandService.getInsultWithTranslate(chatId));
+                    } else if (command.equalsIgnoreCase("/showStatus")) {
+                        // Вызов метода getHelp из CommandService
+                        execute(commandService.showStatus(chatId));
+                    }else if (command.equalsIgnoreCase("/setDefault")) {
+                        // Вызов метода getHelp из CommandService
+                        execute(commandService.setDefault(chatId));
+                    }else if (command.equalsIgnoreCase("/setEnRuDictionary")) {
+                        // Вызов метода getHelp из CommandService
+                        execute(commandService.setEnRuDictionary(chatId));
+                    }else if (command.equalsIgnoreCase("/setRuEnDictionary")) {
+                        // Вызов метода getHelp из CommandService
+                        execute(commandService.setRuEnDictionary(chatId));
+                    }
+                    // Отправляем сообщение
+                } catch (TelegramApiException e) {
+                    logger.error("Ошибка при отправке сообщения в Telegram: " + e.getMessage());
                 }
-                // Отправляем сообщение
-            } catch (TelegramApiException e) {
-                logger.error("Ошибка при отправке сообщения в Telegram: " + e.getMessage());
+            } else {
+                logger.info("Обработка текста: " + text);
+                try {
+                    execute(commandService.processText(chatId, text));
+                    // Отправляем сообщение
+                } catch (TelegramApiException e) {
+                    logger.error("Ошибка при отправке сообщения в Telegram: " + e.getMessage());
+                }
             }
         }
     }

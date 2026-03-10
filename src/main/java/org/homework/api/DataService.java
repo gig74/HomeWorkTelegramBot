@@ -1,11 +1,13 @@
 package org.homework.api;
 
-import org.homework.model.CharacterData;
+import org.homework.model.EvilInsultData;
+import org.homework.model.TranslatedDataResponse;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 
 public interface DataService {
-    List<CharacterData> getCharacterData() throws IOException, URISyntaxException;
+    EvilInsultData getInsultData() throws IOException, URISyntaxException;
+    TranslatedDataResponse getStringTranslate(String string, String sourceLang, String targetLang) throws IOException, URISyntaxException;
+    String getEcho(String text);
 }
